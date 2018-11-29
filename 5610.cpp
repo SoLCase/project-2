@@ -1,5 +1,35 @@
 #include<iostream>
+#include<fstream>
+#include<string.h>
 using namespace std;
+class Queuearray
+{
+	public:		
+		Queuearray():capacity(1000000),front(-1),back(-1)
+		{
+        queue = new int[capacity];
+    };
+		void push(int x);
+		void pop();
+		int getFront();
+		void morecapacity();
+	private:
+	    int capacity, front, back;
+        int *queue;	
+};
+int Queuearray::getFront()
+{
+	return queue[front+1];
+}
+void Queuearray::pop()
+{
+	front++;
+}
+void Queuearray::push(int x)
+{
+	
+	queue[++back]=x;
+}
 struct Vertice
 {
 	int visits,distance;
@@ -116,8 +146,9 @@ Vertice *findway(Vertice *start,int nowb)
 	else if(temp==d){return start->down;}
 	else if(temp==u){ return start->up;}
 };
-int main()
+int main(int argc,char*argv[])
 {
+	
 	int r,c,i,j,k;
     cin>>r>>c;
     int array[r][c];
@@ -128,9 +159,22 @@ int main()
 	int chargepos;
 	char x;
 	int nv=0;
+	fstream fin;
+	string folderin;
+    string folderout;
+    string pathin,pathout;
+    string start;
+    folderin = "/floor.data";
+    folderout = "/final.path";
+    start ="./";
+    pathin = start+argv[1] + folderin;
+    pathout = start+argv[1] + folderout;
+    fin.open(pathin,ios::in);
+    if(fin.is_open()){cout<<"opened";}else{cerr<<"defail";}
+    fin>>r;fin>>c;
 	for(int i=1;i<=size;i++)
 	{
-		cin>>x;
+		fin>>x;
 		if(x=='0')
 		{graph->vertices[i].distance=battery/2;graph->vertices[i].visits=0;
 		graph->vertices[i].up=NULL;	graph->vertices[i].left=NULL;graph->vertices[i].right=NULL;graph->vertices[i].down=NULL;graph->vertices[i].zz='0';
@@ -141,6 +185,7 @@ int main()
 		{graph->vertices[i].distance=0;graph->vertices[i].visits=0;graph->vertices[i].up=NULL;	graph->vertices[i].left=NULL;graph->vertices[i].right=NULL;graph->vertices[i].down=NULL;
 		chargepos=i;nv++;graph->vertices[i].zz='R';}		
 	}
+	fin.close();
 	int connecting=0;
 	//2D->1D a[i][j]->a[x] (i-1)*c+j=x (x-j)/c=i-1
 	for(int i=1;i<=r;i++)
@@ -198,7 +243,8 @@ int main()
 		  }
 	}
 	int nowb=battery;
-	
+	Queuearray steps;
+	int stepc=0;
 	setdistance(&graph->vertices[chargepos]);
 	
 	
@@ -218,8 +264,9 @@ int main()
 	
 	
 	nowb--;
-	now->zz='C';
 	now=findway(now,nowb);
+	stepc++;
+	steps.push(now->x);steps.push(now->y);
 	//cout<<now->x<<"  "<<now->y<<endl;
 	
     }
@@ -228,20 +275,21 @@ int main()
     
 	nowb--;
 	now=findway(now,nowb);
-	//cout<<now->x<<"  "<<now->y<<endl;
+	stepc++;
+	steps.push(now->x);steps.push(now->y);
 	if(now==&graph->vertices[chargepos])
 	{
 		break;
 	}
 	}
-	for(int i=1;i<=r;i++)
-	{
-		for(int j=1;j<=c;j++)
-		{
-			int dpos=(i-1)*c+j;
-			cout<<graph->vertices[dpos].zz<<"  ";
-		}
-		cout<<endl;
-	}
-    
+	ofstream result;
+result.open(pathout,ios::out);
+result<<stepc<<endl;
+   for(i=0;i<stepc;i++)
+     {
+     	result<<steps.getFront()<<" ";steps.pop();
+     	result<<steps.getFront()<<endl;steps.pop();
+	 }
+	 result.close();
+    return 0;
 } 

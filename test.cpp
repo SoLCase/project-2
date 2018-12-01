@@ -5,7 +5,7 @@ using namespace std;
 class Queuearray
 {
 	public:		
-		Queuearray():capacity(1000000),front(-1),back(-1)
+		Queuearray():capacity(10000000),front(-1),back(-1)
 		{
         queue = new int[capacity];
     };
@@ -35,57 +35,42 @@ struct Vertice
 	int visits,distance;
 	int x,y;
 	Vertice *up,*left,*down,*right;
-	char zz;
+	bool nd;
 };
-struct Graph
-{
-	struct Vertice *vertices;	
-};
-
- struct Graph* makeGraph(int size) 
-{ 
-	struct Graph* graph = new Graph;
-	graph->vertices = new Vertice[size]; 
-
-	return graph; 
-} ;
-
 void setdistance(Vertice* start)
 {
+
      int distance=start->distance+1;
+	 cout<<endl<<distance;
      if(start->up!=NULL)
      {
-     	if(distance<=start->up->distance)
-     	{
-     		start->up->distance=distance;
-     		setdistance(start->up);
-		 }
+		    if(start->up->distance==1)
+     		{start->up->distance=distance;}
+			 else 
+			 {if(start->up->distance>distance){start->up->distance=distance;}}
 	 }
-	      if(start->right!=NULL)
+	     if(start->left!=NULL)
      {
-     	if(distance<=start->right->distance)
-     	{
-     		start->right->distance=distance;
-     		setdistance(start->right);
-		 }
+		    if(start->left->distance==1)
+     		{start->left->distance=distance;}
+			 else 
+			 {if(start->left->distance>distance){start->left->distance=distance;}}
 	 }
-	      if(start->down!=NULL)
+	     if(start->down!=NULL)
      {
-     	if(distance<=start->down->distance)
-     	{
-     		start->down->distance=distance;
-     		setdistance(start->down);
-		 }
+		    if(start->down->distance==1)
+     		{start->down->distance=distance;}
+			 else 
+			 {if(start->down->distance>distance){start->down->distance=distance;}}
 	 }
-	      if(start->left!=NULL)
+	     if(start->right!=NULL)
      {
-     	if(distance<=start->left->distance)
-     	{
-     		start->left->distance=distance;
-     		setdistance(start->left);
-		 }
+		    if(start->right->distance==1)
+     		{start->right->distance=distance;}
+			 else 
+			 {if(start->right->distance>distance){start->right->distance=distance;}}
 	 }
-	
+
 };
 Vertice *findway(Vertice *start,int nowb)
 {
@@ -146,36 +131,65 @@ Vertice *findway(Vertice *start,int nowb)
 	else if(temp==d){return start->down;}
 	else if(temp==u){ return start->up;}
 };
+
+struct Graph
+{
+	struct Vertice *vertices;	
+};
+
+ struct Graph* makeGraph(int size) 
+{ 
+	struct Graph* graph = new Graph;
+	graph->vertices = new Vertice[size]; 
+
+	return graph; 
+} ;
+
 int main(int argc,char*argv[])
 {
 	
 	int r,c,i,j,k;
-    cin>>r>>c;
-    int array[r][c];
-	int size=r*c;
-	struct Graph* graph = makeGraph(size);
+
+	
 	int battery;	
-	cin>>battery;
+	
 	int chargepos;
 	char x;
 	int nv=0;
-	
+	fstream fin;
+	string folderin;
+    string folderout;
+    string pathin,pathout;
+    string start;
+    folderin = "/floor.data";
+    folderout = "/final.path";
+    start ="./";
+    pathin = start+argv[1] + folderin;
+    pathout = start+argv[1] + folderout;
+    fin.open(pathin,ios::in);
+    if(fin.is_open()){cout<<"opened";}else{cerr<<"defail";}
+    fin>>r;fin>>c;fin>>battery; 
+	int size=r*c;
+	int tod;
+	struct Graph* graph = makeGraph(size);
 	for(int i=1;i<=size;i++)
 	{
-		cin>>x;
+		
+		fin>>x;
 		if(x=='0')
-		{graph->vertices[i].distance=battery/2;graph->vertices[i].visits=0;
-		graph->vertices[i].up=NULL;	graph->vertices[i].left=NULL;graph->vertices[i].right=NULL;graph->vertices[i].down=NULL;graph->vertices[i].zz='0';
-		nv++;}//最遠距離應小於一半的電量，不然走不回來。 
+		{graph->vertices[i].distance=1;graph->vertices[i].visits=0;tod++;graph->vertices[i].nd=false;
+		graph->vertices[i].up=NULL;	graph->vertices[i].left=NULL;graph->vertices[i].right=NULL;graph->vertices[i].down=NULL;
+		nv++;}
 		else if(x=='1')
-		{graph->vertices[i].distance=-1;graph->vertices[i].visits=-1;graph->vertices[i].zz='1';}
+		{graph->vertices[i].distance=-1;graph->vertices[i].visits=-1;}
 		else if(x=='R')
 		{graph->vertices[i].distance=0;graph->vertices[i].visits=0;graph->vertices[i].up=NULL;	graph->vertices[i].left=NULL;graph->vertices[i].right=NULL;graph->vertices[i].down=NULL;
-		chargepos=i;nv++;graph->vertices[i].zz='R';}		
+		chargepos=i;}		
 	}
-	int connecting=0;
+	fin.close();
+	cout<<"goconnece";
 	//2D->1D a[i][j]->a[x] (i-1)*c+j=x (x-j)/c=i-1
-	for(int i=1;i<=r;i++)
+		for(int i=1;i<=r;i++)
 	{
 		
           for(int j=1;j<=c;j++)
@@ -187,54 +201,35 @@ int main(int argc,char*argv[])
           	{
           		graph->vertices[dpos].x=i-1;
           		graph->vertices[dpos].y=j-1;
-          		if(graph->vertices[dpos].distance==battery/2)
-          	    {
-				  if(graph->vertices[(i-2)*c+j].visits==0)
-				  {
-				  	graph->vertices[dpos].up=&graph->vertices[(i-2)*c+j];
-				  }//up
+          	    	if(i>1){
+						  if(graph->vertices[dposup].visits==0){
+				  	graph->vertices[dpos].up=&graph->vertices[(i-2)*c+j];}
+				  //up
+				  else{graph->vertices[dpos].up=NULL;}}
+				  if(i<r){
           		if(graph->vertices[i*c+j].visits==0)
 				  {
 				    graph->vertices[dpos].down=&graph->vertices[i*c+j];
-				  }//down
+				  }
+				  else{graph->vertices[dpos].down=NULL;}}//down
+				  if(j>1){
           		if(graph->vertices[dpos-1].visits==0)
 				  {
 				  	graph->vertices[dpos].left=&graph->vertices[dpos-1];
-				  }//left
+				  }else{graph->vertices[dpos].left=NULL;}}//left
+				  if(j<c){
           		if(graph->vertices[dpos+1].visits==0)
 				  {
 				  	graph->vertices[dpos].right=&graph->vertices[dpos+1];
-				  }//right 換行時一定不會進迴圈，所以不用擔心 
-			}
-			   
-			   
-			   else if(graph->vertices[dpos].distance==0){
-			   	  if(j==1)//left
-			   	  {
-			   	  	graph->vertices[dpos].right=&graph->vertices[dpos+1];
-			      } 
-			      else if(j==c)//right
-			      {
-			      	graph->vertices[dpos].left=&graph->vertices[dpos-1];
-				  }
-				  else if(i==1)//top
-				  {
-				  	graph->vertices[dpos].down=&graph->vertices[i*c+j];
-				  }
-				  else if(i==r)//bott
-				  {
-				  	graph->vertices[dpos].up=&graph->vertices[(i-2)*c+j];
-				  }
-			   }
-			}
-		  }
+				  }else{graph->vertices[dpos].right=NULL;}}//right 			
+			
+		  }}
 	}
 	int nowb=battery;
 	Queuearray steps;
 	int stepc=0;
 	setdistance(&graph->vertices[chargepos]);
-	
-	
+	cout<<"gofind";
 	Vertice  *now=&graph->vertices[chargepos];
 	while(nv>0)
 	{
@@ -242,38 +237,33 @@ int main(int argc,char*argv[])
 	{
 		nowb=battery;
 	}
-	
-	if(now->visits==0)
+	nowb--;
+	now=findway(now,nowb);
+		if(now->visits==0)
 	{
 		nv--;
 	}
 	now->visits++;
-	
-	
-	nowb--;
-	now=findway(now,nowb);
 	stepc++;
 	steps.push(now->x);steps.push(now->y);
-	//cout<<now->x<<"  "<<now->y<<endl;
-	
-    }
-    while(nv==0)
+	}
+    cout<<"back";
+    while(now->distance>0)
     {
-    
-	nowb--;
+		nowb--;
 	now=findway(now,nowb);
-	stepc++;
+	stepc++;now->visits++;
 	steps.push(now->x);steps.push(now->y);
-	if(now==&graph->vertices[chargepos])
-	{
-		break;
 	}
-	}
-    
-    cout<<stepc<<endl;
-    for(int i=0;i<stepc;i++)
-    {
-    	cout<<steps.getFront()<<" ";steps.pop();
-    	cout<<steps.getFront()<<endl;steps.pop();
-	}
+	cout<<"output";
+	ofstream result;
+result.open(pathout,ios::out);
+result<<stepc<<endl;
+   for(i=0;i<stepc;i++)
+     {
+     	result<<steps.getFront()<<" ";steps.pop();
+     	result<<steps.getFront()<<endl;steps.pop();
+	 }
+	 delete[] &steps;
+    return 0;
 } 
